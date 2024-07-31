@@ -1,0 +1,26 @@
+# This is an example build and deploy to Hub.Docker.com pipeline configuration
+# -----
+image: atlassian/default-image:3
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: 'Lint'
+            script:
+              - echo "Your linting goes here..."
+        - step:
+            name: 'Security scan'
+            script:
+              - echo "Your security scan goes here..."
+    - step:
+        name: 'Build and Push Docker Image'
+        services:
+          - docker
+        script:
+          - echo ${DOCKERHUB_TOKEN} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+          - IMAGE="${DOCKERHUB_USERNAME}/my_app"
+          - VERSION="${BITBUCKET_BUILD_NUMBER}"
+          - docker build -t ${IMAGE} MyProject
+          - docker tag ${IMAGE} ${IMAGE}:${VERSION}
+          - docker push ${IMAGE}
